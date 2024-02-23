@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>assignment1</title>
+		<style>
+			body { margin: 0; }
+			        /* Simple styling to ensure the containers do not overlap and are visually separated */
+			.visualization-container {
+            width: 100%;
+            height: 50vh; /* Adjust the height as needed */
+            position: relative;
+            margin-bottom: 20px; /* Increase space between containers to accommodate titles */
+        }
+        .container-title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+		</style>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
+          }
+        }
+    </script>
+	</head>
+	<body>
+		<h1 style="text-align: center;">Assignment 1</h1>
+		<h2>Loop Subdivision</h2>
+		<div id="container13">
+			<h2 class="container-title">Cube Subdivided</h2>
+		</div>
+		<p>
+			To implement loop subdivision I used the half-edge data structure. 
+			Each edge is broken down into two edges which are directed in opposite directions. Here is the design of the data structure used:
+		</p>
+		<ul>
+			<li>
+				<strong>Half-Edge:</strong>
+				<ul>
+					<li>Points to the next half edge.</li>
+					<li>Previous half edge.</li>
+					<li>Points to its <strong>opposite half-edge</strong>, the twin half-edge with inverse direction, allowing access to adjacent faces.</li>
+					<li>Points to the <strong>vertex</strong> it originates from, facilitating edge-to-vertex navigation.</li>
+					<li>Points to the <strong>face</strong> it bounds, linking edges to faces.</li>
+				</ul>
+			</li>
+			<li>
+				<strong>Vertex:</strong>
+				<ul>
+					<li>Points to one <strong>outgoing half-edge</strong>, enabling the discovery of all connecting edges and adjacent vertices.</li>
+				</ul>
+			</li>
+			<li>
+				<strong>Face (Facet):</strong>
+				<ul>
+					<li>Points to one of its <strong>boundary half-edges</strong>, facilitating the traversal of its defining edges and vertices.</li>
+				</ul>
+			</li>
+		</ul>
+		<p>Through this structured connectivity:</p>
+		<ul>
+			<li>From a <strong>vertex</strong>, it's possible to explore all its connected vertices, edges, and enclosing faces.</li>
+			<li>From an <strong>edge</strong> (represented as a half-edge), one can access its vertices, the two adjacent faces, and surrounding edges.</li>
+			<li>From a <strong>face</strong>, iterating through its boundary vertices and edges, as well as neighboring faces, becomes straightforward.</li>
+		</ul>
+
+
+		<!-- <div id="visualization2"></div> -->
+
+		<h2>Quadric Error Mesh Decimation</h2>
+		<h2>Background and Introduction</h2>
+		<p>
+			Quadric Error Metrics (QEM) based simplification is a sophisticated algorithm designed for the reduction of polygon counts in 3D models while preserving their original shape and appearance as closely as possible. Introduced by Michael Garland and Paul S. Heckbert in their seminal paper, this method employs a mathematical approach to evaluate the impact of vertex removal on the model's overall appearance, optimizing for minimal visual distortion. By calculating the 'quadric,' or squared distance error, for each possible edge contraction, QEM effectively determines the most unnoticeable simplifications. This technique has revolutionized 3D graphics by enabling highly detailed models to be streamlined into simpler versions suitable for real-time rendering and visualization on hardware with limited processing capabilities. As such, QEM has found widespread applications across various fields, including computer graphics, virtual reality, and interactive gaming, where maintaining visual fidelity with optimized performance is paramount.
+		</p>
+		
+		<h2>Method Overview:</h2>
+        <ul>
+            <li><strong>Objective:</strong> Reduce the number of vertices in the mesh while preserving its overall shape.</li>
+            <li><strong>Q Matrix Calculation:</strong> Computes a Q matrix for each vertex to quantify the error of collapsing any edge connected to it.</li>
+            <li><strong>Error Heap:</strong> Initializes a heap to prioritize edges based on the error calculated from the Q matrices, ensuring minimal shape distortion.</li>
+            <li><strong>Edge Collapse:</strong> Iteratively collapses the edge with the minimum error, merging two vertices into one and adjusting the mesh topology.</li>
+            <li><strong>Vertex and Face Updates:</strong> Updates adjacent vertices and faces to reflect the changes from each edge collapse.</li>
+            <li><strong>Recompute Error:</strong> Recalculates the error for remaining edges connected to the collapsed vertices, updating the heap accordingly.</li>
+            <li><strong>Target Vertex Count:</strong> Continues the edge collapse process until the mesh reaches the desired number of vertices.</li>
+            <li><strong>Mesh Rebuilding:</strong> Reconstructs the mesh to clean up and finalize the structure post-simplification.</li>
+        </ul>
+			<h2>Main Adjacency Structures Used</h2>
+		
+			<h3>1. Vertex to Vertex Adjacency List (V2V)</h3>
+			<p><strong>Purpose:</strong> Represents the adjacency relationship between vertices. If two vertices share an edge, they are considered adjacent.</p>
+			<p><strong>Implementation:</strong> A list of lists, where each index in the main list corresponds to a vertex, and each sublist contains the indices of vertices adjacent to this vertex.</p>
+			<p><strong>Effectiveness:</strong> Allows for quick access to neighboring vertices, essential for operations like edge collapse.</p>
+		
+			<h3>2. Vertex to Face Adjacency List (VF)</h3>
+			<p><strong>Purpose:</strong> Keeps track of which faces a given vertex is part of. Crucial for recalculating normals and other properties after mesh modification.</p>
+			<p><strong>Implementation:</strong> A list of sets, where each index corresponds to a vertex, and each set contains the indices of faces that vertex is part of.</p>
+			<p><strong>Effectiveness:</strong> Essential for quickly updating or recalculating mesh properties localized to specific vertices.</p>
+		
+			<h3>3. Edge to Edge Adjacency List (E2E)</h3>
+			<p><strong>Purpose:</strong> Represents the adjacency between edges, specifically which edges are connected to each other through vertices.</p>
+			<p><strong>Implementation:</strong> Represented through arrays containing indices of adjacent edges and the vertex pairs defining each edge.</p>
+			<p><strong>Effectiveness:</strong> Crucial for identifying edge loops and maintaining the mesh's integrity during simplification.</p>
+		
+			<h2>Application to Quadric Error Simplification</h2>
+			<p>The goal of quadric error simplification is to reduce the number of vertices and faces in a mesh while preserving its overall shape. This process involves operations like edge collapse, requiring efficient access to adjacency information:</p>
+		
+			<ul>
+				<li><strong>Determining Which Vertices and Faces Are Affected:</strong> V2V and VF structures enable quick lookups of this information.</li>
+				<li><strong>Recalculating Properties:</strong> After modification, properties like face normals and vertex positions need to be recalculated.</li>
+				<li><strong>Maintaining Mesh Integrity:</strong> The E2E structure helps ensure that the mesh remains a valid representation of the object.</li>
+			</ul>
+		
+			<p>These adjacency structures are key to the efficiency and effectiveness of the mesh simplification process, enabling the algorithm to quickly and accurately perform necessary updates as the mesh topology changes.</p>
+
+			<h2> Space and Runtime Complexity</h2>
+			<p>
+				Space complexity:
+				Since I used adjacency lists for v2x, e2e and v2e, the space complexity is O(V+E) or simply O(V) using euler's formula
+				</p>
+			<p>
+				Time complexity:
+				The time complexity of the algorithm is dominated by the simplification process, specifically the edge collapse operations and the initial heap construction. Thus, the time complexity can be approximated as O(E log E + nk log E) (where k is the numebr of adjacent vertices or faces to a vertex and n is the number of edges that are collapsed), which simplifies to O(nk log V) since E is proportional to V. This indicates that the time complexity is heavily dependent on the number of vertices, the density of the mesh (affecting k), and the number of edge collapses performed (n).
+	
+			</p>
+		<h3>Visualizations:</h3>
+		<div id="container1">
+			<h2 class="container-title">Armadillo with 20 percent vertices</h2>
+		</div>
+		<div id="container2">
+			<h2 class="container-title">Armadillo with 40 percent vertices</h2>
+		</div>
+		<div id="container3">
+			<h2 class="container-title">Armadillo with 60 percent vertices</h2>
+		</div>
+		<div id="container4">
+			<h2 class="container-title">Armadillo with 90 percent vertices</h2>
+		</div>
+		<div id="container5">
+			<h2 class="container-title">Bunny with 20 percent vertices</h2>
+		</div>
+		<div id="container6">
+			<h2 class="container-title">Bunny with 40 percent vertices</h2>
+		</div>
+		<div id="container7">
+			<h2 class="container-title">Bunny with 60 percent vertices</h2>
+		</div>
+		<div id="container8">
+			<h2 class="container-title">Bunny with 90 percent vertices</h2>
+		</div>
+		<div id="container9">
+			<h2 class="container-title">Cow with 20 percent vertices</h2>
+		</div>
+		<div id="container10">
+			<h2 class="container-title">Cow with 40 percent vertices</h2>
+		</div>
+		<div id="container11">
+			<h2 class="container-title">Cow with 60 percent vertices</h2>
+		</div>
+		<div id="container12">
+			<h2 class="container-title">Cow with 90 percent vertices</h2>
+		</div>
+
+        <!-- <div id="container2"></div> -->
+		<script type="module" src="../js/assignment1.js"></script>
+	</body>
+</html>
