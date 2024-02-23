@@ -18,7 +18,9 @@ const objFiles = [
 	'../../assets/output/quadratic_error_simplification/cow_40perc.obj',
 	'../../assets/output/quadratic_error_simplification/cow_60perc.obj',
 	'../../assets/output/quadratic_error_simplification/cow_90perc.obj',
-	'../../assets/output/loop_subdivision/cube_subdivided.obj',
+	'../../assets/output/loop_subdivision/cube_subdivided0.obj',
+	'../../assets/output/loop_subdivision/cube_subdivided1.obj',
+	'../../assets/output/loop_subdivision/cube_subdivided2.obj',
 
     // Add more file paths as needed
 ];

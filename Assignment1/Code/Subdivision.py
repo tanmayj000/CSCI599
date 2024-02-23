@@ -254,6 +254,6 @@ for i in range(iterations):
 
     new_vertice[:(len(old_updated_vertice))] = old_updated_vertice
 
-    save_halfmesh_as_obj(new_vertice, new_facets, 'assets/output/loop_subdivision/cube_subdivided.obj')
-    tmesh = trimesh.load_mesh('assets/output/loop_subdivision/cube_subdivided.obj')
+    save_halfmesh_as_obj(new_vertice, new_facets, 'assets/output/loop_subdivision/cube_subdivided' + str(i) + '.obj')
+    tmesh = trimesh.load_mesh('assets/output/loop_subdivision/cube_subdivided' + str(i) + '.obj')
 
