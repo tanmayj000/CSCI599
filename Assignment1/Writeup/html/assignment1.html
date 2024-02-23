@@ -32,6 +32,15 @@
 		<div id="container13">
 			<h2 class="container-title">Cube Subdivided</h2>
 		</div>
+		<h2>Background and Introduction</h2>
+		<p>
+			Loop subdivision is a surface subdivision scheme used in computer graphics to create smoother meshes from polygonal geometry. It was developed by Charles Loop in 1987 for triangular meshes. The method works by subdividing each triangle into four smaller triangles, increasing the mesh density and smoothing the surface by adjusting the positions of both old and new vertices based on neighboring vertex positions.
+		</p>
+		<p>
+			Half edge data structure is particularly effective for implementing Loop subdivision because it explicitly represents the connectivity between vertices, edges, and faces of a mesh. This allows for easy access to neighboring elements, which is essential for the subdivision process.
+		</p>
+		<h2>Data Structure Design:</h2>
+
 		<p>
 			To implement loop subdivision I used the half-edge data structure. 
 			Each edge is broken down into two edges which are directed in opposite directions. Here is the design of the data structure used:
@@ -68,8 +77,6 @@
 		</ul>
 
 
-		<!-- <div id="visualization2"></div> -->
-
 		<h2>Quadric Error Mesh Decimation</h2>
 		<h2>Background and Introduction</h2>
 		<p>
@@ -87,7 +94,7 @@
             <li><strong>Target Vertex Count:</strong> Continues the edge collapse process until the mesh reaches the desired number of vertices.</li>
             <li><strong>Mesh Rebuilding:</strong> Reconstructs the mesh to clean up and finalize the structure post-simplification.</li>
         </ul>
-			<h2>Main Adjacency Structures Used</h2>
+			<h2>Data Structure Design</h2>
 		
 			<h3>1. Vertex to Vertex Adjacency List (V2V)</h3>
 			<p><strong>Purpose:</strong> Represents the adjacency relationship between vertices. If two vertices share an edge, they are considered adjacent.</p>
